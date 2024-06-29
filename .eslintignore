@@ -1,0 +1,11 @@
+# /hello/*    // 开头有“/”，匹配相对于`.gitignore`文件本身的目录级别的。
+# hello/      // 结尾“/”， 匹配任意级别的hello目录下的所有目录（不包含文件）
+# hello.*     // 匹配以hello.开头的文件或者文件夹
+# hello/*     // 匹配hello目录下的所有目录和文件
+# !/foo/bar   // 排除目录 foo/bar 之外的所有内容
+# **/foo      // 前导 " `**`"，在所有目录中匹配， 与foo相同
+# foo/**      // 尾随的“ `/**`”匹配里面的所有内容。匹配目录“ `foo`”下的所有文件
+
+.eslintrc.cjs
+rollup.config.js
+

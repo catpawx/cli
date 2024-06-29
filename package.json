@@ -1,0 +1,53 @@
+{
+  "name": "@catpawx/cli",
+  "version": "1.0.0",
+  "description": "下载模板cli",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": ["cli","template"],
+  "author": "相甫",
+  "license": "ISC",
+  "scripts": {
+    "postinstall": "husky install",
+    "commit": "git-cz",
+    "build": "rimraf dist && rollup -c",
+    "lint": "eslint packages --fix --ext .js",
+    "lint:ts": "tsc --noEmit && eslint packages --ext .ts,.tsx",
+    "prettier": "prettier --write 'packages/**/*.{js,json,yml,yaml,css,scss,less,ts,tsx,md}'",
+    "lint-staged": "lint-staged --allow-empty"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-git"
+    }
+  },
+  "devDependencies": {
+    "@catpawx/eslint-config-preset": "^0.0.1",
+    "@catpawx/prettier-config-preset": "^0.0.1",
+    "@commitlint/cli": "^19.3.0",
+    "commitizen": "^4.3.0",
+    "cz-git": "^1.9.3",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "eslint": "^8.12.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.17.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.5"
+  }
+}
