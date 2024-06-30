@@ -1,20 +1,25 @@
-import path from 'path'
-
 import fs from 'fs-extra'
 import inquirer from 'inquirer'
+import path from 'path'
 
-import { TemplateType } from '../enums/create.js'
+import config from '../config.js'
 
 /**
  * 获取模板值
  */
 export async function getTemplate(options) {
-  if (options?.vite) {
-    return TemplateType.VITE
-  }
+  // options={'ts':true,'js':true} 找到手动录入的模板值与config中的模板值做比较
+  let templateName = ''
+  config.frameworks.forEach(template => {
+    Object.keys(options).forEach(key => {
+      if (key === template) {
+        templateName = template
+      }
+    })
+  })
 
-  if (options?.umi) {
-    return TemplateType.UMI
+  if (templateName) {
+    return templateName
   }
 
   const opt = [
@@ -22,10 +27,7 @@ export async function getTemplate(options) {
       name: 'value',
       type: 'list',
       message: '请选择创建模板',
-      choices: [
-        { name: 'vite', value: TemplateType.VITE },
-        { name: 'umi', value: TemplateType.UMI },
-      ],
+      choices: config.frameworks,
     },
   ]
   const result = await inquirer.prompt(opt)

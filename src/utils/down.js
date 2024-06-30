@@ -1,11 +1,10 @@
-import path from 'path'
-import util from 'util'
-
 import chalk from 'chalk'
 import downloadGitRepo from 'download-git-repo'
 import ora from 'ora'
+import path from 'path'
+import util from 'util'
 
-import { TemplateType } from '../enums/create.js'
+import config from '../config.js'
 
 // 添加加载动画
 async function wrapLoading(fn, message, ...args) {
@@ -27,14 +26,8 @@ async function wrapLoading(fn, message, ...args) {
 /**
  * 从git拉取模板
  */
-const gitUrl = {
-  [TemplateType.UMI]:
-    'direct:http://10.0.25.150:8444/seres-fe/templates/seres-umi.git#main',
-  [TemplateType.VITE]:
-    'direct:http://10.0.25.150:8444/seres-fe/templates/vite-antd.git#main',
-}
+
 class Down {
-  // eslint-disable-next-line prettier/prettier
   constructor(filePath, templateVal) {
     this.templateVal = templateVal
     this.targetDir = filePath
@@ -42,12 +35,16 @@ class Down {
   }
 
   async download() {
+    console.log(
+      '🚀🚀🚀======>>>config.frameworkUrls?.[this.templateVal]',
+      config.frameworkUrls?.[this.templateVal],
+    )
     return await wrapLoading(
       this.downloadGitRepo,
       'loading...',
-      gitUrl?.[this.templateVal],
+      config.frameworkUrls?.[this.templateVal],
       path.resolve(process.cwd(), this.targetDir),
-      { clone: true },
+      // { clone: true },
     )
   }
 
@@ -59,7 +56,6 @@ class Down {
       )
     } catch (err) {
       console.log(err)
-      console.log(`\r\n ${chalk.cyan('联系我： hwj')}\r\n`)
     }
   }
 }

@@ -7,7 +7,7 @@ import Down from '../utils/down.js'
  */
 export default async function create(...arg) {
   const [name, options] = arg
-
+  console.log('🚀🚀🚀======>>>name, options', name, options)
   const templateVal = await getTemplate(options)
 
   const { path, shouldCreateFile } = await getFilePath(name)

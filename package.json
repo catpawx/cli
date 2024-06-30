@@ -1,6 +1,6 @@
 {
   "name": "@catpawx/cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "下载模板cli",
   "type": "module",
   "main": "dist/index.js",
@@ -18,6 +18,7 @@
   "scripts": {
     "postinstall": "husky install",
     "commit": "git-cz",
+    "build": "rimraf dist && rollup -c",
     "lint": "eslint packages --fix --ext .js",
     "prettier": "prettier --write 'packages/**/*.{js,json,yml,yaml,css,scss,less,ts,tsx,md}'",
     "lint-staged": "lint-staged --allow-empty"
@@ -43,7 +44,7 @@
     "ora": "^8.0.1"
   },
   "devDependencies": {
-    "@catpawx/eslint-config-preset": "^0.0.2",
+    "@catpawx/eslint-config-preset": "^0.0.3",
     "@catpawx/prettier-config-preset": "^0.0.1",
     "@commitlint/cli": "^19.3.0",
     "@rollup/plugin-commonjs": "^25.0.7",
