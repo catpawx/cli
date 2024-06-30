@@ -2,7 +2,7 @@ import fs from 'fs-extra'
 import inquirer from 'inquirer'
 import path from 'path'
 
-import config from '../config.js'
+import config from '../config/config.js'
 
 /**
  * 获取模板值

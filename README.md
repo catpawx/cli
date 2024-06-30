@@ -1,7 +1,14 @@
-# 说明
+# 全局安装
 
-cli,用于下载模板项目
+```bash
+npm install -g @catpawx/cli
+```
 
-# debugger
+# 使用
 
-1. ts debugger功能已经配置好
+```bash
+catpawx create [your-project-name]
+catpawx create
+```
+
+即可根据流程创建一个项目

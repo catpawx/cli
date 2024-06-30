@@ -4,7 +4,7 @@ import ora from 'ora'
 import path from 'path'
 import util from 'util'
 
-import config from '../config.js'
+import config from '../config/config.js'
 
 // 添加加载动画
 async function wrapLoading(fn, message, ...args) {
@@ -35,16 +35,12 @@ class Down {
   }
 
   async download() {
-    console.log(
-      '🚀🚀🚀======>>>config.frameworkUrls?.[this.templateVal]',
-      config.frameworkUrls?.[this.templateVal],
-    )
     return await wrapLoading(
       this.downloadGitRepo,
       'loading...',
       config.frameworkUrls?.[this.templateVal],
       path.resolve(process.cwd(), this.targetDir),
-      // { clone: true },
+      { clone: true },
     )
   }
 

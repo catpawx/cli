@@ -1,6 +1,6 @@
 {
   "name": "@catpawx/cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "下载模板cli",
   "type": "module",
   "main": "dist/index.js",
@@ -16,12 +16,15 @@
   "author": "相甫",
   "license": "ISC",
   "scripts": {
-    "postinstall": "husky install",
+    "prepare": "husky install",
     "commit": "git-cz",
     "build": "rimraf dist && rollup -c",
     "lint": "eslint packages --fix --ext .js",
     "prettier": "prettier --write 'packages/**/*.{js,json,yml,yaml,css,scss,less,ts,tsx,md}'",
-    "lint-staged": "lint-staged --allow-empty"
+    "lint-staged": "lint-staged --allow-empty",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish --registry=https://registry.npmjs.com/"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -46,6 +49,7 @@
   "devDependencies": {
     "@catpawx/eslint-config-preset": "^0.0.3",
     "@catpawx/prettier-config-preset": "^0.0.1",
+    "@changesets/cli": "^2.27.6",
     "@commitlint/cli": "^19.3.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
