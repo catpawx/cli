@@ -7,7 +7,7 @@
   "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
   "bin": {
-    "catpawx": "src/index.js"
+    "create-catpawx": "dist/index.js"
   },
   "keywords": [
     "cli",
@@ -18,7 +18,7 @@
   "scripts": {
     "prepare": "husky install",
     "commit": "git-cz",
-    "build": "rimraf dist && rollup -c",
+    "build": "tsc --build",
     "lint": "eslint packages --fix --ext .js",
     "prettier": "prettier --write 'packages/**/*.{js,json,yml,yaml,css,scss,less,ts,tsx,md}'",
     "lint-staged": "lint-staged --allow-empty",
@@ -54,6 +54,8 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
     "commitizen": "^4.3.0",
     "cz-git": "^1.9.3",
     "eslint": "^8.12.0",
