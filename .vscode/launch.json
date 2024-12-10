@@ -9,7 +9,10 @@
       "request": "launch",
       "name": "Launch Program",
       "program": "${workspaceFolder}/src/index.ts",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "npm: build",
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal"
     }
   ]
 }

@@ -2,10 +2,6 @@
   "name": "@catpawx/cli",
   "version": "0.0.2",
   "description": "💪🏻 猫爪联盟前端团队cli下载模板",
-  "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/types/index.d.ts",
   "bin": {
     "create-catpawx": "dist/index.js"
   },
@@ -18,9 +14,9 @@
   "scripts": {
     "prepare": "husky install",
     "commit": "git-cz",
-    "build": "tsc --build",
-    "lint": "eslint packages --fix --ext .js",
-    "prettier": "prettier --write 'packages/**/*.{js,json,yml,yaml,css,scss,less,ts,tsx,md}'",
+    "build": "npm run lint && npm run prettier && tsc --build",
+    "lint": "eslint --fix src",
+    "prettier": "prettier --write \"src/**/*.ts\"",
     "lint-staged": "lint-staged --allow-empty",
     "changeset": "changeset",
     "version-packages": "changeset version",
@@ -44,7 +40,7 @@
     "figlet": "^1.7.0",
     "fs-extra": "^11.2.0",
     "inquirer": "^9.3.1",
-    "ora": "^8.0.1"
+    "ora": "^3.2.0"
   },
   "devDependencies": {
     "@catpawx/eslint-config-preset": "^0.0.3",
@@ -63,6 +59,12 @@
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
-    "rollup": "^4.17.2"
+    "rollup": "^4.17.2",
+    "@types/minimist": "^1.2.5",
+    "@types/prompts": "^2.4.9",
+    "cross-spawn": "^7.0.6",
+    "minimist": "^1.2.8",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2"
   }
 }

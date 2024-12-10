@@ -1,195 +1,244 @@
-#! /usr/bin/env node
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import { program } from 'commander'
-// @ts-expect-error
+import fs from 'node:fs'
+import path from 'node:path'
+
 import downloadGitRepo from 'download-git-repo'
-import fs from 'fs-extra'
-import inquirer from 'inquirer'
+// import { fileURLToPath } from 'node:url'
+// import spawn from 'cross-spawn'
+import minimist from 'minimist'
 import ora from 'ora'
-import path from 'path'
+import colors from 'picocolors'
+import prompts from 'prompts'
+const {
+  blue,
+  blueBright,
+  cyan,
+  green,
+  // greenBright,
+  magenta,
+  red,
+  redBright,
+  reset,
+  yellow,
+} = colors
 
-interface Options {
-  force?: boolean
-  ts?: boolean
-  js?: boolean
+const argv = minimist<{
+  template?: string
+  help?: boolean
+}>(process.argv.slice(2), {
+  default: { help: false },
+  alias: { h: 'help', t: 'template' },
+  string: ['_'],
+})
+const cwd = process.cwd()
+
+// prettier-ignore
+const helpMessage = `\
+Usage: create-vite [OPTION]... [DIRECTORY]
+
+Create a new Vite project in JavaScript or TypeScript.
+With no arguments, start the CLI in interactive mode.
+
+Options:
+  -t, --template NAME        use a specific template
+
+Available templates:
+${yellow    ('vanilla-ts     vanilla'  )}
+${green     ('vue-ts         vue'      )}
+${cyan      ('react-ts       react'    )}
+${cyan      ('react-swc-ts   react-swc')}
+${magenta   ('preact-ts      preact'   )}
+${redBright ('lit-ts         lit'      )}
+${red       ('svelte-ts      svelte'   )}
+${blue      ('solid-ts       solid'    )}
+${blueBright('qwik-ts        qwik'     )}`
+
+type ColorFunc = (str: string | number) => string
+
+type Framework = {
+  name: string
+  display: string
+  color: ColorFunc
+  // variants: FrameworkVariant[]
+  url: string
 }
-
-// const config = {
-//   // 可选择的框架
-//   frameworks: ['ts', 'js'],
-//   // 框架对应的仓库地址
-//   frameworkUrls: {
-//     ts: 'direct:https://github.com/catpawx/rollup-template.git#main',
-//     js: 'direct:git@github.com:catpawx/rollup-template.git#main',
-//   },
+// type FrameworkVariant = {
+//   name: string
+//   display: string
+//   color: ColorFunc
+//   customCommand?: string
 // }
-const FRAMEWORKURLS = {
-  ts: 'direct:https://github.com/catpawx/rollup-template.git#main',
-  js: 'direct:git@github.com:catpawx/rollup-template.git#main',
-} as const
 
-program
-  .command('create [name]')
-  .description('创建一个新项目（create a new project）')
-  .option('-f, --force', '强制替换当前目录')
-  .option('--ts', '使用ts模板')
-  .option('--js', '使用js模板')
-  .action((...arg) => {
-    console.log('🚀🚀🚀======>>>arg', arg)
-    create(...arg)
-  })
+const FRAMEWORKS: Framework[] = [
+  {
+    name: 'rollup-template',
+    display: 'Rollup-template',
+    color: yellow,
+    url: 'direct:https://github.com/catpawx/rollup-template.git#main',
+    // variants: [
+    //   {
+    //     name: 'vanilla-ts',
+    //     display: 'TypeScript',
+    //     color: blue,
+    //   },
+    //   {
+    //     name: 'vanilla',
+    //     display: 'JavaScript',
+    //     color: yellow,
+    //   },
+    // ],
+  },
+]
 
-program.parse(process.argv)
+const TEMPLATES = FRAMEWORKS.map(framework => framework.name)
 
-/**
- * create 命令
- * @returns
- */
-async function create(...arg: any[]) {
-  const [name, options] = arg
-  const templateVal = await getTemplate(options)
+const defaultTargetDir = 'test'
 
-  const { path, shouldCreateFile } = await getFilePath(name)
-
-  if (!shouldCreateFile) {
-    const isCancel = await verifyFileName(options, path)
-    if (isCancel) return
+/** 程序入口 */
+async function init() {
+  console.log('🚀🚀🚀======>>>111')
+  const argTargetDir = formatTargetDir(argv._[0])
+  console.log('🚀🚀🚀======>>>argTargetDir', argTargetDir)
+  const argTemplate = argv.template || argv.t
+  console.log('🚀🚀🚀======>>>argTemplate', argTemplate)
+  const help = argv.help
+  if (help) {
+    console.log(helpMessage)
   }
 
-  downloadFromGit({ templateVal, targetDir: path })
-}
+  let targetDir = argTargetDir || defaultTargetDir
+  console.log('🚀🚀🚀======>>>targetDir', targetDir)
 
-/**
- * 获取模板值
- */
-export async function getTemplate(
-  options: Options,
-): Promise<keyof typeof FRAMEWORKURLS> {
-  // options={'ts':true,'js':true} 找到手动录入的模板值与config中的模板值做比较
-  let templateName
-  Object.keys(FRAMEWORKURLS).forEach(template => {
-    Object.keys(options).forEach(key => {
-      if (key === template) {
-        templateName = template
-      }
-    })
+  const getProjectName = () => path.basename(path.resolve(targetDir))
+
+  let result: prompts.Answers<
+    'projectName' | 'overwrite' | 'packageName' | 'framework'
+  >
+
+  prompts.override({
+    overwrite: argv.overwrite,
   })
 
-  if (templateName) {
-    return templateName
-  }
-
-  const opt = [
-    {
-      name: 'value',
-      type: 'list',
-      message: '请选择创建模板',
-      choices: Object.keys(FRAMEWORKURLS),
-    },
-  ]
-  const result = await inquirer.prompt(opt)
-  return result?.value
-}
-
-/**
- * 获取文件夹路径
- */
-export async function getFilePath(name: string) {
-  const cwd = process.cwd()
-
-  // 如果没有输入名称，手动录入
-  if (!name) {
-    // 是否在当前目录创建
-    const shouldCreateFile = await inquirer.prompt([
-      {
-        name: 'value',
-        type: 'list',
-        message:
-          '是否在当前目录直接生成？（如选择是，则直接生成，否则会在创建一个文件夹内生成）',
-        choices: [
-          { name: '是', value: 1 },
-          { name: '否', value: 0 },
-        ],
-      },
-    ])
-
-    if (Number(shouldCreateFile?.value)) {
-      return {
-        path: cwd,
-        shouldCreateFile: true,
-      }
-    } else {
-      const fileName = await inquirer.prompt([
+  try {
+    result = await prompts(
+      [
         {
-          name: 'value',
-          type: 'input',
-          message: '您还没有输入项目名称，请输入：',
+          type: argTargetDir ? null : 'text',
+          name: 'projectName',
+          message: reset('Project name:'),
+          initial: defaultTargetDir,
+          onState: state => {
+            targetDir = formatTargetDir(state.value) || defaultTargetDir
+          },
         },
-      ])
-
-      return {
-        path: path.join(cwd, fileName?.value),
-        shouldCreateFile: false,
-      }
-    }
-  }
-
-  return {
-    path: path.join(cwd, name),
-    shouldCreateFile: false,
-  }
-}
-
-/**
- * 校验文件夹重名操作
- */
-export async function verifyFileName(options: Options, filePath: string) {
-  const isExist = fs.existsSync(filePath)
-  if (!isExist) return false
-
-  // 如果强制创建，则移除
-  if (options.force) {
-    await fs.remove(filePath)
-    return true
-  }
-
-  const inquirerParams = [
-    {
-      name: 'value',
-      type: 'list',
-      message: '目标文件目录已经存在，请选择如下操作：',
-      choices: [
-        { name: '替换当前目录', value: 'replace' },
-        { name: '取消当前操作', value: 'cancel' },
+        {
+          type: () =>
+            !fs.existsSync(targetDir) || isEmpty(targetDir) ? null : 'select',
+          name: 'overwrite',
+          message: () =>
+            (targetDir === '.'
+              ? 'Current directory'
+              : `Target directory "${targetDir}"`) +
+            ' is not empty. Please choose how to proceed:',
+          initial: 0,
+          choices: [
+            {
+              title: 'Cancel operation',
+              value: 'no',
+            },
+            {
+              title: 'Remove existing files and continue',
+              value: 'yes',
+            },
+            {
+              title: 'Ignore files and continue',
+              value: 'ignore',
+            },
+          ],
+        },
+        {
+          type: (_, { overwrite }: { overwrite?: string }) => {
+            if (overwrite === 'no') {
+              throw new Error(red('✖') + ' Operation cancelled')
+            }
+            return null
+          },
+          name: 'overwriteChecker',
+        },
+        {
+          type: () => (isValidPackageName(getProjectName()) ? null : 'text'),
+          name: 'packageName',
+          message: reset('Package name:'),
+          initial: () => toValidPackageName(getProjectName()),
+          validate: dir =>
+            isValidPackageName(dir) || 'Invalid package.json name',
+        },
+        {
+          type:
+            argTemplate && TEMPLATES.includes(argTemplate) ? null : 'select',
+          name: 'framework',
+          message:
+            typeof argTemplate === 'string' && !TEMPLATES.includes(argTemplate)
+              ? reset(
+                  `"${argTemplate}" isn't a valid template. Please choose from below: `,
+                )
+              : reset('Select a framework:'),
+          initial: 0,
+          choices: FRAMEWORKS.map(framework => {
+            const frameworkColor = framework.color
+            return {
+              title: frameworkColor(framework.display || framework.name),
+              value: framework,
+            }
+          }),
+        },
+        // {
+        //   type: (framework: Framework | /* package name */ string) =>
+        //     typeof framework === 'object' ? 'select' : null,
+        //   name: 'variant',
+        //   message: reset('Select a variant:'),
+        //   choices: (framework: Framework) =>
+        //     framework.variants.map(variant => {
+        //       const variantColor = variant.color
+        //       return {
+        //         title: variantColor(variant.display || variant.name),
+        //         value: variant.name,
+        //       }
+        //     }),
+        // },
       ],
-    },
-  ]
-  const inquirerData = await inquirer.prompt(inquirerParams)
-  switch (inquirerData.value) {
-    case 'replace':
-      // 移除已存在的目录
-      console.log('\r\n 移除中...')
-      await fs.remove(filePath)
-      console.log('\r\n 移除完成')
-      break
-    case 'cancel':
-      console.log('\r 取消成功')
-      return true
-    default:
-      return false
+      {
+        onCancel: () => {
+          throw new Error(red('✖') + ' Operation cancelled')
+        },
+      },
+    )
+    const { framework, overwrite, packageName } = result
+    console.log('🚀🚀🚀======>>>result', framework, overwrite, packageName)
+
+    const root = path.join(cwd, targetDir)
+
+    if (overwrite === 'yes') {
+      emptyDir(root)
+    } else if (!fs.existsSync(root)) {
+      fs.mkdirSync(root, { recursive: true })
+    }
+
+    // determine template
+    const template: string = framework?.name || argTemplate
+
+    downloadFromGit(
+      FRAMEWORKS.find(framework => framework.name === template)!.url,
+      root,
+    )
+  } catch (cancelled: any) {
+    console.log(cancelled.message)
   }
 }
 
 /**
  * 从git拉取模板
  */
-async function downloadFromGit({
-  templateVal,
-  targetDir,
-}: {
-  templateVal: keyof typeof FRAMEWORKURLS
-  targetDir: any
-}) {
+async function downloadFromGit(url: string, dest: string) {
   try {
     // 使用 ora 初始化，传入提示信息 message
     const spinner = ora('loading...')
@@ -197,12 +246,7 @@ async function downloadFromGit({
     spinner.start()
 
     try {
-      const result = await downloadGitRepo(
-        FRAMEWORKURLS?.[templateVal],
-        path.resolve(process.cwd(), targetDir),
-        { clone: true },
-        () => {},
-      )
+      const result = await downloadGitRepo(url, dest, { clone: true }, () => {})
       spinner.succeed('下载成功 !!!')
       return Promise.resolve(result)
     } catch (error) {
@@ -213,3 +257,43 @@ async function downloadFromGit({
     console.log(err)
   }
 }
+
+function formatTargetDir(targetDir: string | undefined) {
+  return targetDir?.trim().replace(/\/+$/g, '')
+}
+
+function isEmpty(path: string) {
+  const files = fs.readdirSync(path)
+  return files.length === 0 || (files.length === 1 && files[0] === '.git')
+}
+
+function emptyDir(dir: string) {
+  if (!fs.existsSync(dir)) {
+    return
+  }
+  for (const file of fs.readdirSync(dir)) {
+    if (file === '.git') {
+      continue
+    }
+    fs.rmSync(path.resolve(dir, file), { recursive: true, force: true })
+  }
+}
+
+function isValidPackageName(projectName: string) {
+  return /^(?:@[a-z\d\-*~][a-z\d\-*._~]*\/)?[a-z\d\-~][a-z\d\-._~]*$/.test(
+    projectName,
+  )
+}
+
+function toValidPackageName(projectName: string) {
+  return projectName
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/^[._]/, '')
+    .replace(/[^a-z\d\-~]+/g, '-')
+}
+
+init().catch(e => {
+  console.error(e)
+})
