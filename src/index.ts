@@ -2,24 +2,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import downloadGitRepo from 'download-git-repo'
-// import { fileURLToPath } from 'node:url'
-// import spawn from 'cross-spawn'
 import minimist from 'minimist'
 import ora from 'ora'
 import colors from 'picocolors'
 import prompts from 'prompts'
-const {
-  blue,
-  blueBright,
-  cyan,
-  green,
-  // greenBright,
-  magenta,
-  red,
-  redBright,
-  reset,
-  yellow,
-} = colors
+import util from 'util'
+const { red, reset, yellow } = colors
 
 const argv = minimist<{
   template?: string
@@ -33,24 +21,17 @@ const cwd = process.cwd()
 
 // prettier-ignore
 const helpMessage = `\
-Usage: create-vite [OPTION]... [DIRECTORY]
+Usage: cpx [OPTION]... [DIRECTORY]
 
-Create a new Vite project in JavaScript or TypeScript.
-With no arguments, start the CLI in interactive mode.
+创建一个新的JavaScript或TypeScript项目.
+无参数时，以交互模式启动CLI.
 
-Options:
-  -t, --template NAME        use a specific template
+选项:
+  -t, --template NAME        使用特定的模板
 
-Available templates:
-${yellow    ('vanilla-ts     vanilla'  )}
-${green     ('vue-ts         vue'      )}
-${cyan      ('react-ts       react'    )}
-${cyan      ('react-swc-ts   react-swc')}
-${magenta   ('preact-ts      preact'   )}
-${redBright ('lit-ts         lit'      )}
-${red       ('svelte-ts      svelte'   )}
-${blue      ('solid-ts       solid'    )}
-${blueBright('qwik-ts        qwik'     )}`
+可用模板:
+${yellow    ('rollup-template-ts     rollup-template'  )}
+`
 
 type ColorFunc = (str: string | number) => string
 
@@ -58,15 +39,8 @@ type Framework = {
   name: string
   display: string
   color: ColorFunc
-  // variants: FrameworkVariant[]
   url: string
 }
-// type FrameworkVariant = {
-//   name: string
-//   display: string
-//   color: ColorFunc
-//   customCommand?: string
-// }
 
 const FRAMEWORKS: Framework[] = [
   {
@@ -74,39 +48,23 @@ const FRAMEWORKS: Framework[] = [
     display: 'Rollup-template',
     color: yellow,
     url: 'direct:https://github.com/catpawx/rollup-template.git#main',
-    // variants: [
-    //   {
-    //     name: 'vanilla-ts',
-    //     display: 'TypeScript',
-    //     color: blue,
-    //   },
-    //   {
-    //     name: 'vanilla',
-    //     display: 'JavaScript',
-    //     color: yellow,
-    //   },
-    // ],
   },
 ]
 
 const TEMPLATES = FRAMEWORKS.map(framework => framework.name)
 
-const defaultTargetDir = 'test'
+const defaultTargetDir = 'catpawx'
 
 /** 程序入口 */
 async function init() {
-  console.log('🚀🚀🚀======>>>111')
   const argTargetDir = formatTargetDir(argv._[0])
-  console.log('🚀🚀🚀======>>>argTargetDir', argTargetDir)
   const argTemplate = argv.template || argv.t
-  console.log('🚀🚀🚀======>>>argTemplate', argTemplate)
   const help = argv.help
   if (help) {
     console.log(helpMessage)
   }
 
   let targetDir = argTargetDir || defaultTargetDir
-  console.log('🚀🚀🚀======>>>targetDir', targetDir)
 
   const getProjectName = () => path.basename(path.resolve(targetDir))
 
@@ -124,7 +82,7 @@ async function init() {
         {
           type: argTargetDir ? null : 'text',
           name: 'projectName',
-          message: reset('Project name:'),
+          message: reset('项目名称:'),
           initial: defaultTargetDir,
           onState: state => {
             targetDir = formatTargetDir(state.value) || defaultTargetDir
@@ -135,22 +93,20 @@ async function init() {
             !fs.existsSync(targetDir) || isEmpty(targetDir) ? null : 'select',
           name: 'overwrite',
           message: () =>
-            (targetDir === '.'
-              ? 'Current directory'
-              : `Target directory "${targetDir}"`) +
-            ' is not empty. Please choose how to proceed:',
+            (targetDir === '.' ? '当前目录' : `目标目录 "${targetDir}"`) +
+            ' 内容不为空。请选择如何继续。:',
           initial: 0,
           choices: [
             {
-              title: 'Cancel operation',
+              title: '取消操作',
               value: 'no',
             },
             {
-              title: 'Remove existing files and continue',
+              title: '删除现有文件并继续',
               value: 'yes',
             },
             {
-              title: 'Ignore files and continue',
+              title: '忽略文件并继续',
               value: 'ignore',
             },
           ],
@@ -158,7 +114,7 @@ async function init() {
         {
           type: (_, { overwrite }: { overwrite?: string }) => {
             if (overwrite === 'no') {
-              throw new Error(red('✖') + ' Operation cancelled')
+              throw new Error(red('✖') + ' 操作已取消')
             }
             return null
           },
@@ -167,10 +123,9 @@ async function init() {
         {
           type: () => (isValidPackageName(getProjectName()) ? null : 'text'),
           name: 'packageName',
-          message: reset('Package name:'),
+          message: reset('包名(package.json name):'),
           initial: () => toValidPackageName(getProjectName()),
-          validate: dir =>
-            isValidPackageName(dir) || 'Invalid package.json name',
+          validate: dir => isValidPackageName(dir) || '无效的package.json名称',
         },
         {
           type:
@@ -178,10 +133,8 @@ async function init() {
           name: 'framework',
           message:
             typeof argTemplate === 'string' && !TEMPLATES.includes(argTemplate)
-              ? reset(
-                  `"${argTemplate}" isn't a valid template. Please choose from below: `,
-                )
-              : reset('Select a framework:'),
+              ? reset(`"${argTemplate}" 不是一个有效的模板。请从以下选择: `)
+              : reset('选择一个框架:'),
           initial: 0,
           choices: FRAMEWORKS.map(framework => {
             const frameworkColor = framework.color
@@ -191,45 +144,65 @@ async function init() {
             }
           }),
         },
-        // {
-        //   type: (framework: Framework | /* package name */ string) =>
-        //     typeof framework === 'object' ? 'select' : null,
-        //   name: 'variant',
-        //   message: reset('Select a variant:'),
-        //   choices: (framework: Framework) =>
-        //     framework.variants.map(variant => {
-        //       const variantColor = variant.color
-        //       return {
-        //         title: variantColor(variant.display || variant.name),
-        //         value: variant.name,
-        //       }
-        //     }),
-        // },
       ],
       {
         onCancel: () => {
-          throw new Error(red('✖') + ' Operation cancelled')
+          throw new Error(red('✖') + ' 操作已取消')
         },
       },
     )
     const { framework, overwrite, packageName } = result
-    console.log('🚀🚀🚀======>>>result', framework, overwrite, packageName)
 
+    // 最终目录
     const root = path.join(cwd, targetDir)
-
     if (overwrite === 'yes') {
       emptyDir(root)
     } else if (!fs.existsSync(root)) {
       fs.mkdirSync(root, { recursive: true })
     }
 
-    // determine template
+    // 临时目录
+    const templateDir = path.join(root, `.temp-${targetDir}`)
+    // 如果存在临时目录，清空
+    if (fs.existsSync(templateDir)) {
+      emptyDir(templateDir)
+    } else {
+      fs.mkdirSync(templateDir, { recursive: true })
+    }
+
+    // 确定模板
     const template: string = framework?.name || argTemplate
 
-    downloadFromGit(
+    // 下载模板
+    await download(
       FRAMEWORKS.find(framework => framework.name === template)!.url,
-      root,
+      templateDir,
     )
+
+    // 复制临时目录->目标目录，修改package.json
+    const write = (file: string, content?: string) => {
+      const targetPath = path.join(root, file)
+      if (content) {
+        fs.writeFileSync(targetPath, content)
+      } else {
+        copy(path.join(templateDir, file), targetPath)
+      }
+    }
+
+    const files = fs.readdirSync(templateDir)
+    for (const file of files.filter(f => f !== 'package.json')) {
+      write(file)
+    }
+
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(templateDir, 'package.json'), 'utf-8'),
+    )
+
+    pkg.name = packageName || getProjectName()
+
+    write('package.json', JSON.stringify(pkg, null, 2) + '\n')
+
+    fs.rmSync(templateDir, { recursive: true })
   } catch (cancelled: any) {
     console.log(cancelled.message)
   }
@@ -238,28 +211,41 @@ async function init() {
 /**
  * 从git拉取模板
  */
-async function downloadFromGit(url: string, dest: string) {
+async function download(url: string, dest: string) {
+  const spinner = ora('下载中...')
+  spinner.start()
   try {
-    // 使用 ora 初始化，传入提示信息 message
-    const spinner = ora('loading...')
-    // 开始加载动画
-    spinner.start()
-
-    try {
-      const result = await downloadGitRepo(url, dest, { clone: true }, () => {})
-      spinner.succeed('下载成功 !!!')
-      return Promise.resolve(result)
-    } catch (error) {
-      spinner.fail(`下载失败！请重试 ${error}`)
-      return Promise.reject(error)
-    }
-  } catch (err) {
-    console.log(err)
+    const downloadGitRepoPromisify = util.promisify(downloadGitRepo)
+    const result = await downloadGitRepoPromisify(url, dest, { clone: true })
+    spinner.succeed('下载成功 !!!')
+    return Promise.resolve(result)
+  } catch (error) {
+    spinner.fail(`下载失败！请重试 ${error}`)
+    fs.rmSync(dest, { recursive: true })
+    return Promise.reject(error)
   }
 }
 
 function formatTargetDir(targetDir: string | undefined) {
   return targetDir?.trim().replace(/\/+$/g, '')
+}
+
+function copyDir(srcDir: string, destDir: string) {
+  fs.mkdirSync(destDir, { recursive: true })
+  for (const file of fs.readdirSync(srcDir)) {
+    const srcFile = path.resolve(srcDir, file)
+    const destFile = path.resolve(destDir, file)
+    copy(srcFile, destFile)
+  }
+}
+
+function copy(src: string, dest: string) {
+  const stat = fs.statSync(src)
+  if (stat.isDirectory()) {
+    copyDir(src, dest)
+  } else {
+    fs.copyFileSync(src, dest)
+  }
 }
 
 function isEmpty(path: string) {
