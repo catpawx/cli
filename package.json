@@ -16,7 +16,7 @@
   "author": "相甫",
   "license": "ISC",
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "commit": "git-cz",
     "build": "npm run lint && npm run prettier && tsc --build",
     "lint": "eslint --fix src",
