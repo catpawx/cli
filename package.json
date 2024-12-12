@@ -1,6 +1,6 @@
 {
   "name": "@catpawx/cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "💪🏻 猫爪联盟前端团队cli下载模板",
   "bin": {
     "create-catpawx": "dist/index.js",
@@ -9,6 +9,9 @@
   "keywords": [
     "cli",
     "template"
+  ],
+  "files": [
+    "dist"
   ],
   "author": "相甫",
   "license": "ISC",
@@ -51,6 +54,7 @@
     "picocolors": "^1.1.1",
     "prompts": "^2.4.2",
     "ora": "^3.2.0",
-    "download-git-repo": "^3.0.2"
+    "download-git-repo": "^3.0.2",
+    "typescript": "5.4.5"
   }
 }
