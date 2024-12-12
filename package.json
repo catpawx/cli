@@ -1,6 +1,6 @@
 {
   "name": "@catpawx/cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "💪🏻 猫爪联盟前端团队cli下载模板",
   "bin": {
     "create-catpawx": "dist/index.js",

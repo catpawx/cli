@@ -1,5 +1,11 @@
 # @catpawx/cli
 
+## 1.0.2
+
+### Patch Changes
+
+- 配置prepublishOnly
+
 ## 1.0.1
 
 ### Patch Changes
