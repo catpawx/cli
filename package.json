@@ -1,7 +1,7 @@
 {
   "name": "@catpawx/cli",
-  "version": "1.0.2",
-  "description": "💪🏻 猫爪联盟前端团队cli下载模板",
+  "version": "1.0.3",
+  "description": "🐾 猫爪联盟前端团队cli下载模板",
   "bin": {
     "create-catpawx": "dist/index.js",
     "cpx": "dist/index.js"
@@ -39,23 +39,24 @@
     }
   },
   "devDependencies": {
-    "@catpawx/eslint-config-preset": "^0.0.3",
-    "@catpawx/prettier-config-preset": "^0.0.1",
+    "@catpawx/commitlint-config-preset": "^0.1.0",
+    "@catpawx/eslint-config-preset": "^2.0.0",
+    "@catpawx/prettier-config-preset": "^2.0.0",
     "@changesets/cli": "^2.27.6",
     "@commitlint/cli": "^19.3.0",
+    "@types/minimist": "^1.2.5",
+    "@types/prompts": "^2.4.9",
     "commitizen": "^4.3.0",
     "cz-git": "^1.9.3",
+    "download-git-repo": "^3.0.2",
     "eslint": "^8.12.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
-    "prettier": "^3.2.5",
-    "@types/minimist": "^1.2.5",
-    "@types/prompts": "^2.4.9",
     "minimist": "^1.2.8",
-    "picocolors": "^1.1.1",
-    "prompts": "^2.4.2",
     "ora": "^3.2.0",
-    "download-git-repo": "^3.0.2",
+    "picocolors": "^1.1.1",
+    "prettier": "^3.2.5",
+    "prompts": "^2.4.2",
     "typescript": "5.4.5"
   }
 }

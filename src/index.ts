@@ -9,7 +9,7 @@ import ora from 'ora'
 import colors from 'picocolors'
 import prompts from 'prompts'
 import util from 'util'
-const { red, reset, yellow } = colors
+const { red, reset, yellow, magenta } = colors
 
 const argv = minimist<{
   template?: string
@@ -19,6 +19,7 @@ const argv = minimist<{
   alias: { h: 'help', t: 'template' },
   string: ['_'],
 })
+
 const cwd = process.cwd()
 
 // prettier-ignore
@@ -33,6 +34,7 @@ Usage: cpx [OPTION]... [DIRECTORY]
 
 可用模板:
 ${yellow    ('rollup-template-ts     rollup-template'  )}
+${magenta    ('cli-template-ts     cli-template'  )}
 `
 
 type ColorFunc = (str: string | number) => string
@@ -47,9 +49,15 @@ type Framework = {
 const FRAMEWORKS: Framework[] = [
   {
     name: 'rollup-template',
-    display: 'Rollup-template',
+    display: 'Rollup-Template',
     color: yellow,
     url: 'direct:https://github.com/catpawx/rollup-template.git#main',
+  },
+  {
+    name: 'cli-template',
+    display: 'Cli-Template',
+    color: magenta,
+    url: 'direct:https://github.com/catpawx/cli-template.git#main',
   },
 ]
 

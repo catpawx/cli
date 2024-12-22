@@ -1,5 +1,11 @@
 # @catpawx/cli
 
+## 1.0.3
+
+### Patch Changes
+
+- 添加模板
+
 ## 1.0.2
 
 ### Patch Changes
