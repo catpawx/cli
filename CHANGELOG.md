@@ -1,5 +1,11 @@
 # @catpawx/cli
 
+## 1.0.4
+
+### Patch Changes
+
+- 修改依赖解决全局安装找不到依赖,完善文档
+
 ## 1.0.3
 
 ### Patch Changes
