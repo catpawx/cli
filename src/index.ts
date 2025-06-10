@@ -9,7 +9,7 @@ import ora from 'ora'
 import colors from 'picocolors'
 import prompts from 'prompts'
 import util from 'util'
-const { red, reset, yellow, magenta } = colors
+const { red, reset, yellow, magenta, cyan, green } = colors
 
 const argv = minimist<{
   template?: string
@@ -58,6 +58,18 @@ const FRAMEWORKS: Framework[] = [
     display: 'Cli-Template',
     color: magenta,
     url: 'direct:https://github.com/catpawx/cli-template.git#main',
+  },
+  {
+    name: 'react-template',
+    display: 'React-Template',
+    color: cyan,
+    url: 'direct:https://github.com/catpawx/react-template.git#main',
+  },
+  {
+    name: 'vue-h5-template',
+    display: 'Vue-H5-Template',
+    color: green,
+    url: 'direct:https://github.com/catpawx/vue-h5-template.git#main',
   },
 ]
 
