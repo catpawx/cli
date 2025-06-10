@@ -22,10 +22,7 @@
     "build": "npm run lint && npm run prettier && tsc --build",
     "lint": "eslint --fix src",
     "prettier": "prettier --write \"src/**/*.ts\"",
-    "lint-staged": "lint-staged --allow-empty",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "changeset publish"
+    "lint-staged": "lint-staged --allow-empty"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -42,8 +39,12 @@
     "@catpawx/commitlint-config-preset": "^0.1.0",
     "@catpawx/eslint-config-preset": "^2.0.0",
     "@catpawx/prettier-config-preset": "^2.0.0",
-    "@changesets/cli": "^2.27.6",
     "@commitlint/cli": "^19.3.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.3",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.3",
     "@types/minimist": "^1.2.5",
     "@types/prompts": "^2.4.9",
     "commitizen": "^4.3.0",
@@ -52,13 +53,14 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
+    "semantic-release": "^24.2.5",
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "picocolors": "^1.1.1",
-    "prompts": "^2.4.2",
+    "download-git-repo": "^3.0.2",
     "minimist": "^1.2.8",
     "ora": "^3.2.0",
-    "download-git-repo": "^3.0.2"
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2"
   }
 }
